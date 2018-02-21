@@ -21,7 +21,9 @@ LATEST_FILE?=latest-ci.txt
 GOPATH_1ST=$(shell go env | grep GOPATH | cut -f 2 -d \")
 UNIQUE:=$(shell date +%s)
 GOVERSION=1.9.3
-BUILD=$(GOPATH_1ST)/src/k8s.io/kops/.build
+# BUILD=$(GOPATH_1ST)/src/k8s.io/kops/.build
+BUILD=$(GOPATH_1ST)/src/github.com/jsenon/kops/.build
+
 LOCAL=$(BUILD)/local
 BINDATA_TARGETS=upup/models/bindata.go
 ARTIFACTS=$(BUILD)/artifacts
@@ -151,7 +153,7 @@ kops: ${KOPS}
 
 .PHONY: ${KOPS}
 ${KOPS}: ${BINDATA_TARGETS}
-	go build ${EXTRA_BUILDFLAGS} -ldflags "-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" -o $@ k8s.io/kops/cmd/kops/
+	GOOS=darwin GOARCH=amd64 go build ${EXTRA_BUILDFLAGS} -ldflags "-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" -o $@ k8s.io/kops/cmd/kops/
 
 ${GOBINDATA}:
 	mkdir -p ${LOCAL}

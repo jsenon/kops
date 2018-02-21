@@ -21,7 +21,7 @@ LATEST_FILE?=latest-ci.txt
 GOPATH_1ST=$(shell go env | grep GOPATH | cut -f 2 -d \")
 UNIQUE:=$(shell date +%s)
 GOVERSION=1.9.3
-# BUILD=$(GOPATH_1ST)/src/k8s.io/kops/.build
+# BUILD=$(GOPATH_1ST)/src/github.com/jsenon//kops/.build
 BUILD=$(GOPATH_1ST)/src/github.com/jsenon/kops/.build
 
 LOCAL=$(BUILD)/local
@@ -56,7 +56,7 @@ KOPS                 = ${LOCAL}/kops
 # kops source root directory (without trailing /)
 KOPS_ROOT           ?= $(patsubst %/,%,$(abspath $(dir $(firstword $(MAKEFILE_LIST)))))
 
-GITSHA := $(shell cd ${GOPATH_1ST}/src/k8s.io/kops; git describe --always)
+GITSHA := $(shell cd ${GOPATH_1ST}/src/github.com/jsenon/kops; git describe --always)
 
 # Keep in sync with logic in get_workspace_status
 ifndef VERSION
@@ -167,18 +167,18 @@ kops-gobindata: gobindata-tool ${BINDATA_TARGETS}
 
 UPUP_MODELS_BINDATA_SOURCES:=$(shell find upup/models/ | egrep -v "upup/models/bindata.go")
 upup/models/bindata.go: ${GOBINDATA} ${UPUP_MODELS_BINDATA_SOURCES}
-	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOBINDATA} -o $@ -pkg models -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models/ upup/models/...
+	cd ${GOPATH_1ST}/src/github.com/jsenon//kops; ${GOBINDATA} -o $@ -pkg models -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models/ upup/models/...
 
 # Build in a docker container with golang 1.X
 # Used to test we have not broken 1.X
 # 1.8 is preferred, 1.9 is coming soon so we have a target for it
 .PHONY: check-builds-in-go18
 check-builds-in-go18:
-	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.8 make -C /go/src/k8s.io/kops ci
+	docker run -v ${GOPATH_1ST}/src/github.com/jsenon//kops:/go/src/github.com/jsenon//kops golang:1.8 make -C /go/src/github.com/jsenon//kops ci
 
 .PHONY: check-builds-in-go19
 check-builds-in-go19:
-	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.9 make -C /go/src/k8s.io/kops ci
+	docker run -v ${GOPATH_1ST}/src/github.com/jsenon//kops:/go/src/github.com/jsenon//kops golang:1.9 make -C /go/src/github.com/jsenon//kops ci
 
 
 .PHONY: codegen
@@ -214,7 +214,7 @@ crossbuild-nodeup: ${DIST}/linux/amd64/nodeup
 .PHONY: crossbuild-nodeup-in-docker
 crossbuild-nodeup-in-docker:
 	docker pull golang:${GOVERSION} # Keep golang image up to date
-	docker run --name=nodeup-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -C /go/src/k8s.io/kops/ crossbuild-nodeup
+	docker run --name=nodeup-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/github.com/jsenon//kops golang:${GOVERSION} make -C /go/src/github.com/jsenon//kops/ crossbuild-nodeup
 	docker cp nodeup-build-${UNIQUE}:/go/.build .
 
 .PHONY: ${DIST}/darwin/amd64/kops
@@ -239,10 +239,10 @@ crossbuild: ${DIST}/windows/amd64/kops.exe ${DIST}/darwin/amd64/kops ${DIST}/lin
 .PHONY: crossbuild-in-docker
 crossbuild-in-docker:
 	docker pull golang:${GOVERSION} # Keep golang image up to date
-	docker run --name=kops-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -C /go/src/k8s.io/kops/ crossbuild
+	docker run --name=kops-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/github.com/jsenon//kops golang:${GOVERSION} make -C /go/src/github.com/jsenon//kops/ crossbuild
 	docker start kops-build-${UNIQUE}
-	docker exec kops-build-${UNIQUE} chown -R ${UID}:${GID} /go/src/k8s.io/kops/.build
-	docker cp kops-build-${UNIQUE}:/go/src/k8s.io/kops/.build .
+	docker exec kops-build-${UNIQUE} chown -R ${UID}:${GID} /go/src/github.com/jsenon//kops/.build
+	docker cp kops-build-${UNIQUE}:/go/src/github.com/jsenon//kops/.build .
 	docker kill kops-build-${UNIQUE}
 	docker rm kops-build-${UNIQUE}
 
@@ -392,10 +392,10 @@ ${NODEUP}: ${BINDATA_TARGETS}
 nodeup-dist:
 	mkdir -p ${DIST}
 	docker pull golang:${GOVERSION} # Keep golang image up to date
-	docker run --name=nodeup-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -C /go/src/k8s.io/kops/ nodeup
+	docker run --name=nodeup-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/github.com/jsenon//kops golang:${GOVERSION} make -C /go/src/github.com/jsenon//kops/ nodeup
 	docker start nodeup-build-${UNIQUE}
-	docker exec nodeup-build-${UNIQUE} chown -R ${UID}:${GID} /go/src/k8s.io/kops/.build
-	docker cp nodeup-build-${UNIQUE}:/go/src/k8s.io/kops/.build/local/nodeup .build/dist/
+	docker exec nodeup-build-${UNIQUE} chown -R ${UID}:${GID} /go/src/github.com/jsenon//kops/.build
+	docker cp nodeup-build-${UNIQUE}:/go/src/github.com/jsenon//kops/.build/local/nodeup .build/dist/
 	(${SHASUMCMD} .build/dist/nodeup | cut -d' ' -f1) > .build/dist/nodeup.sha1
 
 .PHONY: dns-controller-gocode
@@ -436,20 +436,20 @@ copydeps:
 	rsync -avz _vendor/ vendor/ --delete --exclude vendor/  --exclude .git --exclude BUILD --exclude BUILD.bazel
 	mkdir -p vendor/k8s.io/
 	rm -rf vendor/k8s.io/api
-	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/api vendor/k8s.io/api
+	mv vendor/k8s.io/kubernetes/staging/src/github.com/jsenon//api vendor/k8s.io/api
 	rm -rf vendor/k8s.io/apiextensions-apiserver
-	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/apiextensions-apiserver vendor/k8s.io/apiextensions-apiserver
+	mv vendor/k8s.io/kubernetes/staging/src/github.com/jsenon//apiextensions-apiserver vendor/k8s.io/apiextensions-apiserver
 	rm -rf vendor/k8s.io/apimachinery
-	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/apimachinery vendor/k8s.io/apimachinery
+	mv vendor/k8s.io/kubernetes/staging/src/github.com/jsenon//apimachinery vendor/k8s.io/apimachinery
 	rm -rf vendor/k8s.io/apiserver
-	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/apiserver vendor/k8s.io/apiserver
+	mv vendor/k8s.io/kubernetes/staging/src/github.com/jsenon//apiserver vendor/k8s.io/apiserver
 	rm -rf vendor/k8s.io/client-go
-	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/client-go vendor/k8s.io/client-go
+	mv vendor/k8s.io/kubernetes/staging/src/github.com/jsenon//client-go vendor/k8s.io/client-go
 	rm -rf vendor/k8s.io/code-generator
-	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/code-generator vendor/k8s.io/code-generator
+	mv vendor/k8s.io/kubernetes/staging/src/github.com/jsenon//code-generator vendor/k8s.io/code-generator
 	rm -rf vendor/k8s.io/metrics
-	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/metrics vendor/k8s.io/metrics
-	find vendor/k8s.io/kubernetes -type f -name "*.go" | xargs sed -i -e 's-k8s.io/kubernetes/staging/src/k8s.io/apimachinery-k8s.io/apimachinery-g'
+	mv vendor/k8s.io/kubernetes/staging/src/github.com/jsenon//metrics vendor/k8s.io/metrics
+	find vendor/k8s.io/kubernetes -type f -name "*.go" | xargs sed -i -e 's-k8s.io/kubernetes/staging/src/github.com/jsenon//apimachinery-k8s.io/apimachinery-g'
 	bazel run //:gazelle -- -proto disable
 
 .PHONY: dep-ensure
@@ -583,7 +583,7 @@ kops-server-docker-compile:
 kops-server-build:
 	# Compile the API binary in linux, and copy to local filesystem
 	docker pull golang:${GOVERSION}
-	docker run --name=kops-server-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${GOPATH}/src:/go/src -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -C /go/src/k8s.io/kops/ kops-server-docker-compile
+	docker run --name=kops-server-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${GOPATH}/src:/go/src -v ${MAKEDIR}:/go/src/github.com/jsenon//kops golang:${GOVERSION} make -C /go/src/github.com/jsenon//kops/ kops-server-docker-compile
 	docker cp kops-server-build-${UNIQUE}:/go/.build .
 	docker build -t ${DOCKER_REGISTRY}/kops-server:${KOPS_SERVER_TAG} -f images/kops-server/Dockerfile .
 
